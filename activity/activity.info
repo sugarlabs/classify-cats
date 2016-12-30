@@ -1,0 +1,6 @@
+[Activity]
+name = Classify Cats
+activity_version = 1
+bundle_id = org.sugarlabs.ClassifyCats
+icon = activity-icon
+exec = sugar-activity activity.ClassifyCats
