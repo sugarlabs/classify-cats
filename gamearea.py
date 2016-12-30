@@ -19,6 +19,7 @@
 # Boston, MA 02111-1307, USA.
 
 import os
+import json
 import random
 
 from gettext import gettext as _
@@ -33,9 +34,14 @@ from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
 
-class CatType:
-    SEATED = 0
-    STANDING = 1
+class SideType:
+    EVEN = 0
+    ODD = 1
+
+
+class GameType:
+    DIVIDED_SCREEN = 0
+    ROWS = 1
 
 
 def make_cat_pixbuf(cat_id):
@@ -55,21 +61,23 @@ def get_reverse_list(list1):
 
 class Cat(object):
 
-    def __init__(self, cat_id):
+    def __init__(self, cat_id, width, height):
         self.cat_id = cat_id
-        self.cat_type = CatType.SEATED if cat_id in [2, 3] else CatType.STANDING
         self.pixbuf = make_cat_pixbuf(cat_id)
-        self.x = 0
-        self.y = 0
-        self.width = self.pixbuf.get_width()
-        self.height = self.pixbuf.get_height()
+        self.x = -100
+        self.y = -100
+        self.width = width
+        self.height = height
         self.dragged = False
 
+        if self.width != self.pixbuf.get_width() or self.height != self.pixbuf.get_height():
+            self.pixbuf = self.pixbuf.scale_simple(self.width, self.height, GdkPixbuf.InterpType.HYPER)
+
     def draw(self, context, x=None, y=None):
-        if x != None:
+        if x is not None:
             self.x = x
 
-        if y != None:
+        if y is not None:
             self.y = y
 
         Gdk.cairo_set_source_pixbuf(context, self.pixbuf, self.x, self.y)
@@ -82,15 +90,22 @@ class GameArea(Gtk.DrawingArea):
         Gtk.DrawingArea.__init__(self)
 
         self.line_width = 10
-        self.cats_area_height = 150
         self.cats = []
         self.selected_cat = None
         self.over_cat = None
+        self.selected_option = None
+        self.over_option = None
         self.clicked = []
-        self.sides = [CatType.SEATED, CatType.STANDING]
+        self.sides = [SideType.EVEN, SideType.ODD]
         self.playing = False
         self.timeout_id = None
         self.count = None
+        self.level = 0
+        self.levels = {}
+        self.level_data = {}
+
+        with open("levels.json") as file:
+            self.levels = json.load(file)
 
         self.add_events(Gdk.EventMask.POINTER_MOTION_MASK |
                         Gdk.EventMask.BUTTON_RELEASE_MASK |
@@ -105,15 +120,20 @@ class GameArea(Gtk.DrawingArea):
         self.__draw_bg(context)
 
         if self.playing:
-            self.__draw_cats_area(context)
-            self.__draw_destination_area(context)
+            if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+                self.__draw_lines(context)
+
+            elif self.level_data["type"] == GameType.ROWS:
+                self.__draw_selected_option(context)
+
             self.__draw_timeout(context)
             self.__draw_size_label(context)
+            self.__draw_cats(context)
 
         elif self.cats != []:
             self.__draw_end_message(context)
 
-        elif self.count != None and not self.playing:
+        elif self.count is not None and not self.playing:
             self.__draw_count(context)
 
         else:
@@ -121,65 +141,92 @@ class GameArea(Gtk.DrawingArea):
 
     def __motion_cb(self, widget, event):
         alloc = self.get_allocation()
+        if self.level_data == {}:
+            return
 
-        if self.selected_cat is not None:
-            self.selected_cat.dragged = True
-            width = self.selected_cat.width
-            height = self.selected_cat.height
-            x = event.x - width / 2
-            y = event.y - height / 2
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            if self.selected_cat is not None:
+                self.selected_cat.dragged = True
 
-            left_limit = alloc.width / 2 - self.line_width / 2
-            right_limit = alloc.width / 2 + self.line_width / 2
-            xcat = self.selected_cat.width / 2 + x
+                width = self.selected_cat.width
+                height = self.selected_cat.height
+                x = event.x - width / 2
+                y = event.y - height / 2
 
-            if x < 0:
-                x = 0
+                left_limit = alloc.width / 2 - self.line_width / 2
+                right_limit = alloc.width / 2 + self.line_width / 2
+                xcat = self.selected_cat.width / 2 + x
 
-            elif x + width > alloc.width:
-                x = alloc.width - width
+                if x < 0:
+                    x = 0
 
-            if y < self.cats_area_height + self.line_width:
-                y = self.cats_area_height + self.line_width
+                elif x + width > alloc.width:
+                    x = alloc.width - width
 
-            elif y + height > alloc.height - 25:
-                y = alloc.height - height - 25
+                if y < 0:
+                    y = 0
 
-            if x < left_limit and x + width > left_limit and self.clicked[0] < alloc.width / 2:
-                x = left_limit - width
+                elif y + height > alloc.height - 25:
+                    y = alloc.height - height - 25
 
-            elif x + width > right_limit and x < right_limit and self.clicked[0] > alloc.width / 2:
-                x = right_limit
+                if x < left_limit and x + width > left_limit and self.clicked[0] < alloc.width / 2:
+                    x = left_limit - width
 
-            self.selected_cat.x = x
-            self.selected_cat.y = y
-            self.clicked = [event.x, event.y]
+                elif x + width > right_limit and x < right_limit and self.clicked[0] > alloc.width / 2:
+                    x = right_limit
 
-            self.redraw()
+                self.selected_cat.x = x
+                self.selected_cat.y = y
+                self.clicked = [event.x, event.y]
 
-        else:
-            selected = False
-            for cat in self.cats:
-                if event.x >= cat.x and event.x <= cat.x + cat.width and event.y >= cat.y and event.y <= cat.y + cat.height:
-                    self.over_cat = cat
-                    selected = True
-                    break
+                self.redraw()
 
-            if not selected:
-                self.over_cat = None
+            else:
+                selected = False
+                for cat in self.cats:
+                    if event.x >= cat.x and event.x <= cat.x + cat.width and event.y >= cat.y and event.y <= cat.y + cat.height:
+                        self.over_cat = cat
+                        selected = True
+                        break
+
+                if not selected:
+                    self.over_cat = None
+
+        elif self.level_data["type"] == GameType.ROWS:
+            if event.x <= alloc.width / 2 - self.line_width / 2:
+                new_option = self.sides[0]
+
+            elif event.x >= alloc.width / 2 + self.line_width / 2:
+                new_option = self.sides[1]
+
+            else:
+                new_option = None
+
+            if new_option != self.over_option:
+                self.over_option = new_option
+                self.redraw()
 
     def __press_cb(self, widget, event):
         self.clicked = [event.x, event.y]
 
-        if self.over_cat is not None:
-            self.selected_cat = self.over_cat
-            self.bring_to_front(self.selected_cat)
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            if self.over_cat is not None:
+                self.selected_cat = self.over_cat
+                self.bring_to_front(self.selected_cat)
 
-            self.redraw()
+                self.redraw()
+
+        if self.level_data["type"] == GameType.ROWS:
+            self.selected_option = self.over_option
 
     def __release_cb(self, widget, event):
         self.clicked = []
         self.selected_cat = None
+
+        if self.level_data["type"] == GameType.ROWS:
+            if self.selected_option is not None:
+                self.count = 0
+                self.redraw()
 
     def __draw_bg(self, context):
         alloc = self.get_allocation()
@@ -187,39 +234,34 @@ class GameArea(Gtk.DrawingArea):
         context.rectangle(0, 0, alloc.width, alloc.height)
         context.fill()
 
-    def __draw_cats_area(self, context):
-        alloc = self.get_allocation()
-        space = 50
-        cats = 0
-        for cat in self.cats:
-            cats += 1 if not cat.dragged else 0
-
-        total_width = self.cats[0].width * cats + space * (cats - 1)
-
-        x = alloc.width / 2 - total_width / 2
-        y = self.cats_area_height / 2 - self.cats[0].height / 2
-
-        for cat in get_reverse_list(self.cats):
-            if not cat.dragged:
-                cat.draw(context, x, y)
-                x += cat.width + space
-
-            else:
-                cat.draw(context)
-
-    def __draw_destination_area(self, context):
+    def __draw_lines(self, context):
         alloc = self.get_allocation()
 
         context.set_line_width(self.line_width)
         context.set_source_rgb(0, 0, 0)
 
-        context.move_to(0, self.cats_area_height + self.line_width / 2)
-        context.line_to(alloc.width, self.cats_area_height + self.line_width / 2)
-        context.stroke()
-
-        context.move_to(alloc.width / 2, self.cats_area_height)
+        context.move_to(alloc.width / 2, 0)
         context.line_to(alloc.width / 2, alloc.height - 25)
         context.stroke()
+
+    def __draw_cats(self, context):
+        for cat in get_reverse_list(self.cats):
+            cat.draw(context)
+
+    def __draw_selected_option(self, context):
+        alloc = self.get_allocation()
+        width = alloc.width / 2 - self.line_width / 2
+        height = alloc.height
+
+        context.set_source_rgb(0.9, 0.9, 0.9)
+
+        if self.over_option == self.sides[0]:
+            context.rectangle(0, 0, width, height)
+            context.fill()
+
+        elif self.over_option == self.sides[1]:
+            context.rectangle(alloc.width / 2 + self.line_width / 2, 0, width, height)
+            context.fill()
 
     def __draw_timeout(self, context):
         alloc = self.get_allocation()
@@ -231,9 +273,9 @@ class GameArea(Gtk.DrawingArea):
     def __draw_size_label(self, context):
         alloc = self.get_allocation()
 
-        message1 = _("Seated cats")
-        message2 = _("Standing cats")
-        if self.sides[1] == CatType.SEATED:
+        message1 = _("Even cats")
+        message2 = _("Odd cats")
+        if self.sides[0] == SideType.ODD:
             backup = message1
             message1 = message2
             message2 = backup
@@ -242,11 +284,23 @@ class GameArea(Gtk.DrawingArea):
         context.set_font_size(20)
 
         xb, yb, width, height, xa, ya = context.text_extents(message1)
-        context.move_to(alloc.width / 4 - width / 2, alloc.height / 2 + height / 2)
+        y = alloc.height / 2 + height / 2
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            x = alloc.width / 4 - width / 2
+        elif self.level_data["type"] == GameType.ROWS:
+            x = alloc.width / 6 - width / 2
+
+        context.move_to(x, y)
         context.show_text(message1)
 
         xb, yb, width, height, xa, ya = context.text_extents(message2)
-        context.move_to((alloc.width / 4 * 3) - width / 2, alloc.height / 2 + height / 2)
+        y = alloc.height / 2 + height / 2
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            x = alloc.width / 4 * 3 - width / 2
+        elif self.level_data["type"] == GameType.ROWS:
+            x = alloc.width / 6 * 5 - width / 2
+
+        context.move_to(x, y)
         context.show_text(message2)
 
     def __draw_count(self, context):
@@ -255,19 +309,37 @@ class GameArea(Gtk.DrawingArea):
 
     def __draw_end_message(self, context):
         alloc = self.get_allocation()
-        matched = 0
+        y = 0
 
-        for cat in self.cats:
-            side = 0 if cat.x < alloc.width / 2 else 1
-            if cat.cat_type == self.sides[side] and cat.dragged:
-                matched += 1
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            right_cats = 0
+            left_cats = 0
 
-        if matched == 4:
-            message = _("You matched all cats well!")
-        else:
-            message = "%s %d %s" % (_("You matched"), matched, _("cats well."))
+            for cat in self.cats:
+                if cat.x < alloc.width / 2:
+                    left_cats += 1
+                else:
+                    right_cats += 1
 
-        y = self.show_message(context, message, 64)
+            if left_cats % 2 == self.sides[0]:
+                message = _("You correctly placed the cats!")
+            else:
+                message = _("You failed to place correctly cats")
+
+            y = self.show_message(context, message, 64)
+
+        elif self.level_data["type"] == GameType.ROWS:
+            odd = (len(self.cats) % 2) != 0
+            if self.selected_option == int(odd):
+                message = _("You selected correctly!")
+
+            elif self.selected_option != None:
+                message = _("You selected wrong")
+
+            else:
+                message = _("You should have selected an option")
+
+            y = self.show_message(context, message, 64)
 
         self.start_timeout(3, self.reset)
         message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
@@ -297,12 +369,54 @@ class GameArea(Gtk.DrawingArea):
             return self.show_message(context, message, font_size - 5, y)
 
     def add_cats(self):
+        alloc = self.get_allocation()
         cat_ids = range(1, 5)
+        cats = self.level_data["cats"]
+        cats_in_row = 0
+        column = 0
+        space = 50
+        y = -1
 
-        for x in range(1, 5):
+        cat_width = 120
+        cat_height = 120
+
+        if self.level_data["type"] == GameType.ROWS:
+            cat_width = 60
+            cat_height = 60
+
+        for x in range(0, cats):
             cat_id = random.choice(cat_ids)
-            cat_ids.remove(cat_id)
-            self.cats.append(Cat(cat_id))
+            cat = Cat(cat_id, cat_width, cat_height)
+
+            if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+                while cat.x < 0 or cat.x + cat.width > alloc.width or (cat.x < alloc.width / 2 and cat.x + cat.width > alloc.width / 2):
+                    cat.x = random.randint(0, alloc.width - cat.width)
+
+                while cat.y < 0 or cat.y + cat.height > alloc.height - 20:
+                    cat.y = random.randint(0, alloc.height - cat.height - 25)
+
+            elif self.level_data["type"] == GameType.ROWS:
+                if column == cats_in_row:
+                    m = 4 if cats_in_row == 5 else 5
+                    cats_in_row = min(m, cats - x)
+                    column = 0
+                    y += 1
+
+                cat.x = alloc.width / 2 - cats_in_row * (cat.width + space) / 2.0 + (cat.width + space) * column + space / 2
+                cat.y = y
+                column += 1
+
+            self.cats.append(cat)
+
+        if self.level_data["type"] == GameType.ROWS:
+            for cat in self.cats:
+                cat.y = alloc.height / 2 - cat.height * (column - cat.y)
+
+    def load_level_data(self):
+        if self.level > len(self.levels.keys()):
+            self.level = 1
+
+        self.level_data = self.levels[str(self.level)]
 
     def bring_to_front(self, cat):
         self.cats.remove(cat)
@@ -312,19 +426,25 @@ class GameArea(Gtk.DrawingArea):
         def cb():
             self.playing = False
 
+        self.level += 1
+        self.load_level_data()
+
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            random.shuffle(self.sides)
+
         del self.cats
         self.cats = []
-        random.shuffle(self.sides)
         self.add_cats()
         self.playing = True
 
-        self.start_timeout(5, cb)
+        self.start_timeout(15, cb)
 
     def start(self):
+        self.level = 0
         self.start_timeout(3, self.reset, True)
 
     def stop(self):
-        if self.timeout_id != None:
+        if self.timeout_id is not None:
             GObject.source_remove(self.timeout_id)
             self.timeout_id = None
 
@@ -342,16 +462,16 @@ class GameArea(Gtk.DrawingArea):
         self.count = self.count if not end else None
         self.timeout_id = self.timeout_id if not end else None
 
-        if end and callback != None:
+        if end and callback is not None:
             callback()
 
         return not end
 
     def start_timeout(self, time, callback=None, force=False):
-        if self.timeout_id != None and not force:
+        if self.timeout_id is not None and not force:
             return
 
-        elif self.timeout_id != None and force:
+        elif self.timeout_id is not None and force:
             GObject.source_remove(self.timeout_id)
 
         self.count = time + 1
