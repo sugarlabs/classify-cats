@@ -108,6 +108,7 @@ class GameArea(Gtk.DrawingArea):
             self.__draw_cats_area(context)
             self.__draw_destination_area(context)
             self.__draw_timeout(context)
+            self.__draw_size_label(context)
 
         elif self.cats != []:
             self.__draw_end_message(context)
@@ -227,6 +228,27 @@ class GameArea(Gtk.DrawingArea):
         message = "%s %d %s" % (_("You have left"), self.count, _("seconds"))
         self.show_message(context, message, 20, y)
 
+    def __draw_size_label(self, context):
+        alloc = self.get_allocation()
+
+        message1 = _("Seated cats")
+        message2 = _("Standing cats")
+        if self.sides[1] == CatType.SEATED:
+            backup = message1
+            message1 = message2
+            message2 = backup
+
+        context.set_source_rgb(0, 0, 0)
+        context.set_font_size(20)
+
+        xb, yb, width, height, xa, ya = context.text_extents(message1)
+        context.move_to(alloc.width / 4 - width / 2, alloc.height / 2 + height / 2)
+        context.show_text(message1)
+
+        xb, yb, width, height, xa, ya = context.text_extents(message2)
+        context.move_to((alloc.width / 4 * 3) - width / 2, alloc.height / 2 + height / 2)
+        context.show_text(message2)
+
     def __draw_count(self, context):
         message = "%s %d %s" % (_("The game will start in"), self.count, _("seconds"))
         self.show_message(context, message, 54)
@@ -236,7 +258,7 @@ class GameArea(Gtk.DrawingArea):
         matched = 0
 
         for cat in self.cats:
-            side = 0 if cat.x < alloc.width else 1
+            side = 0 if cat.x < alloc.width / 2 else 1
             if cat.cat_type == self.sides[side] and cat.dragged:
                 matched += 1
 
