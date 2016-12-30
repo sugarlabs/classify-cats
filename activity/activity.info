@@ -2,5 +2,5 @@
 name = Classify Cats
 activity_version = 1
 bundle_id = org.sugarlabs.ClassifyCats
-icon = activity-icon
+icon = activity-icon.sugar
 exec = sugar-activity activity.ClassifyCats
