@@ -305,7 +305,21 @@ class GameArea(Gtk.DrawingArea):
 
     def __draw_count(self, context):
         message = "%s %d %s" % (_("The game will start in"), self.count, _("seconds"))
-        self.show_message(context, message, 54)
+        y = self.show_message(context, message, 54)
+        self.__draw_help_message(context, y + 20)
+
+    def __draw_help_message(self, context, y):
+        message = ""
+        level = str(self.get_next_level())
+        next_level = self.levels[level]
+
+        if next_level["type"] == GameType.DIVIDED_SCREEN:
+            message = _("Classify each kind of cat as even or odd")
+
+        elif next_level["type"] == GameType.ROWS:
+            message = _("Is the amout of cats on the screen even or odd?")
+
+        self.show_message(context, message, 20, y)
 
     def __draw_end_message(self, context):
         alloc = self.get_allocation()
@@ -343,7 +357,9 @@ class GameArea(Gtk.DrawingArea):
 
         self.start_timeout(3, self.reset)
         message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
-        self.show_message(context, message, 24, y)
+        y = self.show_message(context, message, 24, y)
+
+        self.__draw_help_message(context, y + 20)
 
     def __draw_welcome_message(self, context):
         message = _("Click on the star to start the game.")
@@ -413,10 +429,15 @@ class GameArea(Gtk.DrawingArea):
                 cat.y = alloc.height / 2 - cat.height * (column - cat.y)
 
     def load_level_data(self):
-        if self.level > len(self.levels.keys()):
-            self.level = 1
-
         self.level_data = self.levels[str(self.level)]
+
+    def get_next_level(self):
+        level = self.level + 1
+
+        if level > len(self.levels.keys()):
+            level = 1
+
+        return level
 
     def bring_to_front(self, cat):
         self.cats.remove(cat)
@@ -426,7 +447,7 @@ class GameArea(Gtk.DrawingArea):
         def cb():
             self.playing = False
 
-        self.level += 1
+        self.level = self.get_next_level()
         self.load_level_data()
 
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
