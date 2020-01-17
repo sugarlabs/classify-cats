@@ -150,12 +150,12 @@ class GameArea(Gtk.DrawingArea):
 
                 width = self.selected_cat.width
                 height = self.selected_cat.height
-                x = event.x - width / 2
-                y = event.y - height / 2
+                x = event.x - width // 2
+                y = event.y - height // 2
 
-                left_limit = alloc.width / 2 - self.line_width / 2
-                right_limit = alloc.width / 2 + self.line_width / 2
-                xcat = self.selected_cat.width / 2 + x
+                left_limit = alloc.width // 2 - self.line_width // 2
+                right_limit = alloc.width // 2 + self.line_width // 2
+                xcat = self.selected_cat.width // 2 + x
 
                 if x < 0:
                     x = 0
@@ -169,10 +169,10 @@ class GameArea(Gtk.DrawingArea):
                 elif y + height > alloc.height - 25:
                     y = alloc.height - height - 25
 
-                if x < left_limit and x + width > left_limit and self.clicked[0] < alloc.width / 2:
+                if x < left_limit and x + width > left_limit and self.clicked[0] < alloc.width // 2:
                     x = left_limit - width
 
-                elif x + width > right_limit and x < right_limit and self.clicked[0] > alloc.width / 2:
+                elif x + width > right_limit and x < right_limit and self.clicked[0] > alloc.width // 2:
                     x = right_limit
 
                 self.selected_cat.x = x
@@ -193,10 +193,10 @@ class GameArea(Gtk.DrawingArea):
                     self.over_cat = None
 
         elif self.level_data["type"] == GameType.ROWS:
-            if event.x <= alloc.width / 2 - self.line_width / 2:
+            if event.x <= alloc.width // 2 - self.line_width // 2:
                 new_option = self.sides[0]
 
-            elif event.x >= alloc.width / 2 + self.line_width / 2:
+            elif event.x >= alloc.width // 2 + self.line_width // 2:
                 new_option = self.sides[1]
 
             else:
@@ -240,8 +240,8 @@ class GameArea(Gtk.DrawingArea):
         context.set_line_width(self.line_width)
         context.set_source_rgb(0, 0, 0)
 
-        context.move_to(alloc.width / 2, 0)
-        context.line_to(alloc.width / 2, alloc.height - 25)
+        context.move_to(alloc.width // 2, 0)
+        context.line_to(alloc.width // 2, alloc.height - 25)
         context.stroke()
 
     def __draw_cats(self, context):
@@ -250,7 +250,7 @@ class GameArea(Gtk.DrawingArea):
 
     def __draw_selected_option(self, context):
         alloc = self.get_allocation()
-        width = alloc.width / 2 - self.line_width / 2
+        width = alloc.width // 2 - self.line_width // 2
         height = alloc.height
 
         context.set_source_rgb(0.9, 0.9, 0.9)
@@ -260,12 +260,12 @@ class GameArea(Gtk.DrawingArea):
             context.fill()
 
         elif self.over_option == self.sides[1]:
-            context.rectangle(alloc.width / 2 + self.line_width / 2, 0, width, height)
+            context.rectangle(alloc.width // 2 + self.line_width // 2, 0, width, height)
             context.fill()
 
     def __draw_timeout(self, context):
         alloc = self.get_allocation()
-        y = alloc.height / 2 - 5
+        y = alloc.height // 2 - 5
 
         message = "%s %d %s" % (_("You have left"), self.count, _("seconds"))
         self.show_message(context, message, 20, y)
@@ -284,21 +284,21 @@ class GameArea(Gtk.DrawingArea):
         context.set_font_size(20)
 
         xb, yb, width, height, xa, ya = context.text_extents(message1)
-        y = alloc.height / 2 + height / 2
+        y = alloc.height // 2 + height // 2
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
-            x = alloc.width / 4 - width / 2
+            x = alloc.width // 4 - width // 2
         elif self.level_data["type"] == GameType.ROWS:
-            x = alloc.width / 6 - width / 2
+            x = alloc.width // 6 - width // 2
 
         context.move_to(x, y)
         context.show_text(message1)
 
         xb, yb, width, height, xa, ya = context.text_extents(message2)
-        y = alloc.height / 2 + height / 2
+        y = alloc.height // 2 + height // 2
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
-            x = alloc.width / 4 * 3 - width / 2
+            x = alloc.width // 4 * 3 - width // 2
         elif self.level_data["type"] == GameType.ROWS:
-            x = alloc.width / 6 * 5 - width / 2
+            x = alloc.width // 6 * 5 - width // 2
 
         context.move_to(x, y)
         context.show_text(message2)
@@ -330,7 +330,7 @@ class GameArea(Gtk.DrawingArea):
             left_cats = 0
 
             for cat in self.cats:
-                if cat.x < alloc.width / 2:
+                if cat.x < alloc.width // 2:
                     left_cats += 1
                 else:
                     right_cats += 1
@@ -376,7 +376,7 @@ class GameArea(Gtk.DrawingArea):
 
         if width <= alloc.width:
             context.set_source_rgb(0, 0, 0)
-            context.move_to(alloc.width / 2 - width / 2, alloc.height / 2 + y)
+            context.move_to(alloc.width // 2 - width // 2, alloc.height // 2 + y)
             context.show_text(message)
 
             return y + height
@@ -405,7 +405,7 @@ class GameArea(Gtk.DrawingArea):
             cat = Cat(cat_id, cat_width, cat_height)
 
             if self.level_data["type"] == GameType.DIVIDED_SCREEN:
-                while cat.x < 0 or cat.x + cat.width > alloc.width or (cat.x < alloc.width / 2 and cat.x + cat.width > alloc.width / 2):
+                while cat.x < 0 or cat.x + cat.width > alloc.width or (cat.x < alloc.width // 2 and cat.x + cat.width > alloc.width // 2):
                     cat.x = random.randint(0, alloc.width - cat.width)
 
                 while cat.y < 0 or cat.y + cat.height > alloc.height - 20:
@@ -418,7 +418,7 @@ class GameArea(Gtk.DrawingArea):
                     column = 0
                     y += 1
 
-                cat.x = alloc.width / 2 - cats_in_row * (cat.width + space) / 2.0 + (cat.width + space) * column + space / 2
+                cat.x = alloc.width // 2 - cats_in_row * (cat.width + space) // 2.0 + (cat.width + space) * column + space // 2
                 cat.y = y
                 column += 1
 
@@ -426,7 +426,7 @@ class GameArea(Gtk.DrawingArea):
 
         if self.level_data["type"] == GameType.ROWS:
             for cat in self.cats:
-                cat.y = alloc.height / 2 - cat.height * (column - cat.y)
+                cat.y = alloc.height // 2 - cat.height * (column - cat.y)
 
     def load_level_data(self):
         self.level_data = self.levels[str(self.level)]
