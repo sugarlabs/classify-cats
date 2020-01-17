@@ -386,7 +386,7 @@ class GameArea(Gtk.DrawingArea):
 
     def add_cats(self):
         alloc = self.get_allocation()
-        cat_ids = range(1, 5)
+        cat_ids = list(range(1, 5))
         cats = self.level_data["cats"]
         cats_in_row = 0
         column = 0
@@ -434,7 +434,7 @@ class GameArea(Gtk.DrawingArea):
     def get_next_level(self):
         level = self.level + 1
 
-        if level > len(self.levels.keys()):
+        if level > len(list(self.levels.keys())):
             level = 1
 
         return level
