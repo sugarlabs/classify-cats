@@ -103,6 +103,10 @@ class GameArea(Gtk.DrawingArea):
         self.level = 0
         self.levels = {}
         self.level_data = {}
+        self.score = 0
+        self.high_score = 0
+        self.puzzle_count = 0
+        self.win = True
 
         with open("levels.json") as file:
             self.levels = json.load(file)
@@ -129,9 +133,11 @@ class GameArea(Gtk.DrawingArea):
             self.__draw_timeout(context)
             self.__draw_size_label(context)
             self.__draw_cats(context)
-
+        elif self.puzzle_count >= 10:
+            self.__draw_gameover(context)
         elif self.cats != []:
             self.__draw_end_message(context)
+        
 
         elif self.count is not None and not self.playing:
             self.__draw_count(context)
@@ -337,8 +343,10 @@ class GameArea(Gtk.DrawingArea):
 
             if left_cats % 2 == self.sides[0]:
                 message = _("You correctly placed the cats!")
+                self.win = True
             else:
                 message = _("You failed to place correctly cats")
+                self.win = False
 
             y = self.show_message(context, message, 64)
 
@@ -346,20 +354,22 @@ class GameArea(Gtk.DrawingArea):
             odd = (len(self.cats) % 2) != 0
             if self.selected_option == int(odd):
                 message = _("You selected correctly!")
+                self.win = True
 
             elif self.selected_option != None:
                 message = _("You selected wrong")
-
+                self.win = False
             else:
                 message = _("You should have selected an option")
 
             y = self.show_message(context, message, 64)
 
-        self.start_timeout(3, self.reset)
-        message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
-        y = self.show_message(context, message, 24, y)
+        if self.puzzle_count < 10:
+            self.start_timeout(3, self.reset)
+            message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
+            y = self.show_message(context, message, 24, y)
 
-        self.__draw_help_message(context, y + 20)
+            self.__draw_help_message(context, y + 20)
 
     def __draw_welcome_message(self, context):
         message = _("Click on the star to start the game.")
@@ -367,6 +377,25 @@ class GameArea(Gtk.DrawingArea):
 
         message = _("(And click the star again to stop it)")
         self.show_message(context, message, 24, y)
+
+    def __draw_gameover(self, context):
+        if not self.win:
+            score = self.score - 20
+        else:
+            score = self.score
+        y = 0
+        self.playing = False
+        message = _("Game Over")
+        y = self.show_message(context, message, 124, -100)
+        your_score = "%s %d" % (_("Your Score:"), score)
+        y = self.show_message(context, your_score, 60, 50)
+        high_score = "%s %d" % (_("High Score:"), score)
+        y = self.show_message(context, high_score, 60, 150)
+        message = _("Click on Star to srat the game")
+        
+        self.score = 0
+        self.win = True
+        y = self.show_message(context, message, 24, 250)
 
     def show_message(self, context, message, font_size, y=0):
         alloc = self.get_allocation()
@@ -432,12 +461,20 @@ class GameArea(Gtk.DrawingArea):
         self.level_data = self.levels[str(self.level)]
 
     def get_next_level(self):
-        level = self.level + 1
-
+        level = self.level
+        if self.win:
+            level = self.level + 1
+        
         if level > len(list(self.levels.keys())):
             level = 1
 
         return level
+
+    def generate_score(self):
+        score = self.score
+        if self.win:
+            score = self.score + 20
+        return score
 
     def bring_to_front(self, cat):
         self.cats.remove(cat)
@@ -447,7 +484,9 @@ class GameArea(Gtk.DrawingArea):
         def cb():
             self.playing = False
 
+        self.puzzle_count += 1
         self.level = self.get_next_level()
+        self.score = self.generate_score()
         self.load_level_data()
 
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
@@ -461,7 +500,10 @@ class GameArea(Gtk.DrawingArea):
         self.start_timeout(15, cb)
 
     def start(self):
+        self.win = True
+        self.puzzle_count = 0
         self.level = 0
+        self.score = 0
         self.start_timeout(3, self.reset, True)
 
     def stop(self):
