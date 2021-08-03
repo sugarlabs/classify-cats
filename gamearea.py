@@ -33,6 +33,8 @@ from gi.repository import Gio
 from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
+from sugar3.activity.activity import get_activity_root
+
 
 class SideType:
     EVEN = 0
@@ -104,7 +106,7 @@ class GameArea(Gtk.DrawingArea):
         self.levels = {}
         self.level_data = {}
         self.score = 0
-        self.high_score = 0
+        self.high_score = self.load_highscore()
         self.puzzle_count = None
         self.win = True
         self.max_puzzle_count = 5
@@ -388,11 +390,13 @@ class GameArea(Gtk.DrawingArea):
             score = self.score
         y = 0
         self.playing = False
+        self.score = score
+        self.save_highscore()
         message = _("Game Over")
         y = self.show_message(context, message, 124, -100)
         your_score = "%s %d" % (_("Your Score:"), score)
         y = self.show_message(context, your_score, 60, 50)
-        high_score = "%s %d" % (_("High Score:"), score)
+        high_score = "%s %d" % (_("High Score:"), self.high_score)
         y = self.show_message(context, high_score, 60, 150)
         message = _("Click on the star to start the game.")
         y = self.show_message(context, message, 30, 250)
@@ -505,6 +509,7 @@ class GameArea(Gtk.DrawingArea):
         self.puzzle_count = 0
         self.level = 1
         self.score = 0
+        self.cats = []
         self.start_timeout(3, self.reset, True)
 
     def stop(self):
@@ -544,3 +549,26 @@ class GameArea(Gtk.DrawingArea):
 
     def redraw(self):
         GObject.idle_add(self.queue_draw)
+    
+    def save_highscore(self):
+        file_path = os.path.join(get_activity_root(), 'data', 'highscore')
+        highscore = [0]
+        if os.path.exists(file_path):
+            with open(file_path, "r") as fp:
+                highscore = fp.readlines()
+
+        int_highscore = int(highscore[0])
+        if not int_highscore > self.score:
+            with open(file_path, "w") as fp:
+                fp.write(str(self.score))
+
+    def load_highscore(self):
+        file_path = os.path.join(get_activity_root(), 'data', 'highscore')
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r") as fp:
+                    highscore = fp.readlines()
+                return int(highscore[0])
+            except ValueError or IndexError:
+                return 0
+        return 0
