@@ -100,13 +100,14 @@ class GameArea(Gtk.DrawingArea):
         self.playing = False
         self.timeout_id = None
         self.count = None
-        self.level = 0
+        self.level = 1
         self.levels = {}
         self.level_data = {}
         self.score = 0
         self.high_score = 0
-        self.puzzle_count = 0
+        self.puzzle_count = None
         self.win = True
+        self.max_puzzle_count = 5
 
         with open("levels.json") as file:
             self.levels = json.load(file)
@@ -133,11 +134,9 @@ class GameArea(Gtk.DrawingArea):
             self.__draw_timeout(context)
             self.__draw_size_label(context)
             self.__draw_cats(context)
-        elif self.puzzle_count >= 10:
-            self.__draw_gameover(context)
-        elif self.cats != []:
-            self.__draw_end_message(context)
         
+        elif self.cats != []:
+            self.__draw_end_message(context)        
 
         elif self.count is not None and not self.playing:
             self.__draw_count(context)
@@ -347,8 +346,8 @@ class GameArea(Gtk.DrawingArea):
             else:
                 message = _("You failed to place correctly cats")
                 self.win = False
-
-            y = self.show_message(context, message, 64)
+            if self.puzzle_count < self.max_puzzle_count:
+                y = self.show_message(context, message, 64)
 
         elif self.level_data["type"] == GameType.ROWS:
             odd = (len(self.cats) % 2) != 0
@@ -361,15 +360,19 @@ class GameArea(Gtk.DrawingArea):
                 self.win = False
             else:
                 message = _("You should have selected an option")
+                self.win = False
+            if self.puzzle_count < self.max_puzzle_count:
+                y = self.show_message(context, message, 64)
 
-            y = self.show_message(context, message, 64)
-
-        if self.puzzle_count < 10:
+        if self.puzzle_count < self.max_puzzle_count:
             self.start_timeout(3, self.reset)
             message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
             y = self.show_message(context, message, 24, y)
 
             self.__draw_help_message(context, y + 20)
+
+        if self.puzzle_count >= self.max_puzzle_count:
+            self.__draw_gameover(context)
 
     def __draw_welcome_message(self, context):
         message = _("Click on the star to start the game.")
@@ -391,11 +394,9 @@ class GameArea(Gtk.DrawingArea):
         y = self.show_message(context, your_score, 60, 50)
         high_score = "%s %d" % (_("High Score:"), score)
         y = self.show_message(context, high_score, 60, 150)
-        message = _("Click on Star to srat the game")
-        
-        self.score = 0
+        message = _("Click on the star to start the game.")
+        y = self.show_message(context, message, 30, 250)
         self.win = True
-        y = self.show_message(context, message, 24, 250)
 
     def show_message(self, context, message, font_size, y=0):
         alloc = self.get_allocation()
@@ -502,7 +503,7 @@ class GameArea(Gtk.DrawingArea):
     def start(self):
         self.win = True
         self.puzzle_count = 0
-        self.level = 0
+        self.level = 1
         self.score = 0
         self.start_timeout(3, self.reset, True)
 
