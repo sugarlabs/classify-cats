@@ -136,9 +136,9 @@ class GameArea(Gtk.DrawingArea):
             self.__draw_timeout(context)
             self.__draw_size_label(context)
             self.__draw_cats(context)
-        
+
         elif self.cats != []:
-            self.__draw_end_message(context)        
+            self.__draw_end_message(context)
 
         elif self.count is not None and not self.playing:
             self.__draw_count(context)
@@ -388,18 +388,17 @@ class GameArea(Gtk.DrawingArea):
             score = self.score - 20
         else:
             score = self.score
-        y = 0
         self.playing = False
         self.score = score
         self.save_highscore()
         message = _("Game Over")
-        y = self.show_message(context, message, 124, -100)
+        self.show_message(context, message, 124, -100)
         your_score = "%s %d" % (_("Your Score:"), score)
-        y = self.show_message(context, your_score, 60, 50)
+        self.show_message(context, your_score, 60, 50)
         high_score = "%s %d" % (_("High Score:"), self.high_score)
-        y = self.show_message(context, high_score, 60, 150)
+        self.show_message(context, high_score, 60, 150)
         message = _("Click on the star to start the game.")
-        y = self.show_message(context, message, 30, 250)
+        self.show_message(context, message, 30, 250)
         self.win = True
 
     def show_message(self, context, message, font_size, y=0):
@@ -569,6 +568,6 @@ class GameArea(Gtk.DrawingArea):
                 with open(file_path, "r") as fp:
                     highscore = fp.readlines()
                 return int(highscore[0])
-            except ValueError or IndexError:
+            except(ValueError, IndexError):
                 return 0
         return 0
