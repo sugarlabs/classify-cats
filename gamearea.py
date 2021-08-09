@@ -215,25 +215,30 @@ class GameArea(Gtk.DrawingArea):
 
     def __press_cb(self, widget, event):
         self.clicked = [event.x, event.y]
+        try:
+            if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+                if self.over_cat is not None:
+                    self.selected_cat = self.over_cat
+                    self.bring_to_front(self.selected_cat)
 
-        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
-            if self.over_cat is not None:
-                self.selected_cat = self.over_cat
-                self.bring_to_front(self.selected_cat)
+                    self.redraw()
 
-                self.redraw()
+            if self.level_data["type"] == GameType.ROWS:
+                self.selected_option = self.over_option
+        except:
+            return 0
 
-        if self.level_data["type"] == GameType.ROWS:
-            self.selected_option = self.over_option
 
     def __release_cb(self, widget, event):
         self.clicked = []
         self.selected_cat = None
-
-        if self.level_data["type"] == GameType.ROWS:
-            if self.selected_option is not None:
-                self.count = 0
-                self.redraw()
+        try:
+            if self.level_data["type"] == GameType.ROWS:
+                if self.selected_option is not None:
+                    self.count = 0
+                    self.redraw()
+        except:
+            return 0
 
     def __draw_bg(self, context):
         alloc = self.get_allocation()
