@@ -384,7 +384,7 @@ class GameArea(Gtk.DrawingArea):
         self.show_message(context, message, 24, y)
 
     def __draw_gameover(self, context):
-        if not self.win:
+        if not self.win and self.puzzle_count == self.max_puzzle_count:
             score = self.score - 20
         else:
             score = self.score
@@ -400,7 +400,7 @@ class GameArea(Gtk.DrawingArea):
         message = _("Click on the star to start the game.")
         self.show_message(context, message, 30, 250)
         self.win = True
-
+        self.puzzle_count += 1
     def show_message(self, context, message, font_size, y=0):
         alloc = self.get_allocation()
 
@@ -509,6 +509,7 @@ class GameArea(Gtk.DrawingArea):
         self.level = 1
         self.score = 0
         self.cats = []
+        self.high_score = self.load_highscore()
         self.start_timeout(3, self.reset, True)
 
     def stop(self):
