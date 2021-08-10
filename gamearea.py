@@ -225,7 +225,7 @@ class GameArea(Gtk.DrawingArea):
 
             if self.level_data["type"] == GameType.ROWS:
                 self.selected_option = self.over_option
-        except:
+        except KeyError:
             return 0
 
 
@@ -237,7 +237,7 @@ class GameArea(Gtk.DrawingArea):
                 if self.selected_option is not None:
                     self.count = 0
                     self.redraw()
-        except:
+        except KeyError:
             return 0
 
     def __draw_bg(self, context):
