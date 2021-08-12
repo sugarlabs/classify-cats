@@ -215,30 +215,29 @@ class GameArea(Gtk.DrawingArea):
 
     def __press_cb(self, widget, event):
         self.clicked = [event.x, event.y]
-        try:
-            if self.level_data["type"] == GameType.DIVIDED_SCREEN:
-                if self.over_cat is not None:
-                    self.selected_cat = self.over_cat
-                    self.bring_to_front(self.selected_cat)
-
-                    self.redraw()
-
-            if self.level_data["type"] == GameType.ROWS:
-                self.selected_option = self.over_option
-        except KeyError:
+        if "type" not in self.level_data.keys():
             return 0
+        if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+            if self.over_cat is not None:
+                self.selected_cat = self.over_cat
+                self.bring_to_front(self.selected_cat)
+
+                self.redraw()
+
+        if self.level_data["type"] == GameType.ROWS:
+            self.selected_option = self.over_option
+
 
 
     def __release_cb(self, widget, event):
         self.clicked = []
         self.selected_cat = None
-        try:
-            if self.level_data["type"] == GameType.ROWS:
-                if self.selected_option is not None:
-                    self.count = 0
-                    self.redraw()
-        except KeyError:
+        if "type" not in self.level_data.keys():
             return 0
+        if self.level_data["type"] == GameType.ROWS:
+            if self.selected_option is not None:
+                self.count = 0
+                self.redraw()
 
     def __draw_bg(self, context):
         alloc = self.get_allocation()
@@ -570,10 +569,10 @@ class GameArea(Gtk.DrawingArea):
     def load_highscore(self):
         file_path = os.path.join(get_activity_root(), 'data', 'highscore')
         if os.path.exists(file_path):
-            try:
-                with open(file_path, "r") as fp:
-                    highscore = fp.readlines()
+            with open(file_path, "r") as fp:
+                highscore = fp.readlines()
+            try: 
                 return int(highscore[0])
-            except(ValueError, IndexError):
+            except (ValueError, IndexError):
                 return 0
         return 0
