@@ -23,6 +23,7 @@ import json
 import random
 
 from gettext import gettext as _
+import logging
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -573,6 +574,7 @@ class GameArea(Gtk.DrawingArea):
                 highscore = fp.readlines()
             try: 
                 return int(highscore[0])
-            except (ValueError, IndexError):
+            except  Exception as e:
+                logging.exception(e)                
                 return 0
         return 0
