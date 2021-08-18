@@ -1,0 +1,21 @@
+V2
+
+* Added screenshots (Sourabha G)
+* Flake8 fixes (Sourabha G)
+* Fixed KeyError (Sourabha G)
+* save and restore high score from Journal (Sourabha G)
+* Feature: Gameover page with highscore (Sourabha G)
+* Altered game flow; 5 puzzles per game (Sourabha G)
+* Feature: score (Sourabha G)
+* Port to Python 3 (Abhay-dot)
+
+V1
+
+* Adding help messages (Cristian García)
+* Adding 'rows' gamemode (Cristian García)
+* Changing icon (Cristian García)
+* Adding side message (Cristian García)
+* Adding start/stop button (Cristian García)
+* Add fill colors (Cristian García)
+* Adding files (Cristian García)
+* Initial commits (Cristian García)
