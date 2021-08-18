@@ -555,26 +555,25 @@ class GameArea(Gtk.DrawingArea):
     def redraw(self):
         GObject.idle_add(self.queue_draw)
     
-    def save_highscore(self):
-        file_path = os.path.join(get_activity_root(), 'data', 'highscore')
+    def read_highscore(self):
         highscore = [0]
+        file_path = os.path.join(get_activity_root(), 'data', 'highscore')
         if os.path.exists(file_path):
             with open(file_path, "r") as fp:
                 highscore = fp.readlines()
+        return int(highscore[0])
 
-        int_highscore = int(highscore[0])
+    def save_highscore(self):
+        int_highscore = self.read_highscore()
         if not int_highscore > self.score:
             with open(file_path, "w") as fp:
                 fp.write(str(self.score))
 
     def load_highscore(self):
-        file_path = os.path.join(get_activity_root(), 'data', 'highscore')
-        if os.path.exists(file_path):
-            with open(file_path, "r") as fp:
-                highscore = fp.readlines()
-            try: 
-                return int(highscore[0])
-            except  Exception as e:
-                logging.exception(e)                
-                return 0
+        highscore = self.read_highscore()
+        try: 
+            return highscore
+        except (ValueError, IndexError) as e:
+            logging.exception(e)                
+            return 0
         return 0
