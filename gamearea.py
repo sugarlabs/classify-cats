@@ -18,12 +18,12 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+import logging
 import os
 import json
 import random
 
 from gettext import gettext as _
-import logging
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -554,7 +554,7 @@ class GameArea(Gtk.DrawingArea):
 
     def redraw(self):
         GObject.idle_add(self.queue_draw)
-    
+
     def read_highscore(self):
         highscore = [0]
         file_path = os.path.join(get_activity_root(), 'data', 'highscore')
@@ -564,6 +564,7 @@ class GameArea(Gtk.DrawingArea):
         return int(highscore[0])
 
     def save_highscore(self):
+        file_path = os.path.join(get_activity_root(), 'data', 'highscore')
         int_highscore = self.read_highscore()
         if not int_highscore > self.score:
             with open(file_path, "w") as fp:
@@ -571,9 +572,9 @@ class GameArea(Gtk.DrawingArea):
 
     def load_highscore(self):
         highscore = self.read_highscore()
-        try: 
+        try:
             return highscore
         except (ValueError, IndexError) as e:
-            logging.exception(e)                
+            logging.exception(e)
             return 0
         return 0
