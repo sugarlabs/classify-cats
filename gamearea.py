@@ -280,7 +280,7 @@ class GameArea(Gtk.DrawingArea):
         alloc = self.get_allocation()
         y = alloc.height // 2 - 5
 
-        message = "%s %d %s" % (_("You have left"), self.count, _("seconds"))
+        message = "%s %d %s" % (_("You have"), self.count, _("seconds left"))
         self.show_message(context, message, 20, y)
 
     def __draw_bonus_message(self, context, reaction_time):
@@ -340,7 +340,7 @@ class GameArea(Gtk.DrawingArea):
             message = _("Classify each kind of cat as even or odd")
 
         elif next_level["type"] == GameType.ROWS:
-            message = _("Is the amout of cats on the screen even or odd?")
+            message = _("Is the amount of cats on the screen even or odd?")
 
         self.show_message(context, message, 20, y)
 
@@ -362,7 +362,7 @@ class GameArea(Gtk.DrawingArea):
                 message = _("You correctly placed the cats!")
                 self.win = True
             else:
-                message = _("You failed to place correctly cats")
+                message = _("You failed to place the cats correctly")
                 self.win = False
             if self.puzzle_count < self.max_puzzle_count:
                 y = self.show_message(context, message, 64)
