@@ -103,6 +103,7 @@ class GameArea(Gtk.DrawingArea):
         self.playing = False
         self.timeout_id = None
         self.count = None
+        self.reaction_time = 0
         self.level = 1
         self.levels = {}
         self.level_data = {}
@@ -236,6 +237,7 @@ class GameArea(Gtk.DrawingArea):
             return 0
         if self.level_data["type"] == GameType.ROWS:
             if self.selected_option is not None:
+                self.reaction_time = self.count
                 self.count = 0
                 self.redraw()
 
@@ -280,6 +282,16 @@ class GameArea(Gtk.DrawingArea):
 
         message = "%s %d %s" % (_("You have left"), self.count, _("seconds"))
         self.show_message(context, message, 20, y)
+
+    def __draw_bonus_message(self, context, reaction_time):
+        if reaction_time != 0 and self.win:
+            message = "%s %d" % (_("Bonus +"),self.reaction_time)
+            y = self.show_message(context, message, 30, -140) 
+
+    def __draw_current_score(self, context):	
+        if self.win:
+            message = "%s %d" % (_("Your Score: "), self.score)	
+            y = self.show_message(context, message, 40, -100)
 
     def __draw_size_label(self, context):
         alloc = self.get_allocation()
@@ -376,6 +388,8 @@ class GameArea(Gtk.DrawingArea):
             y = self.show_message(context, message, 24, y)
 
             self.__draw_help_message(context, y + 20)
+            self.__draw_current_score(context)
+            self.__draw_bonus_message(context, self.reaction_time)
 
         if self.puzzle_count >= self.max_puzzle_count:
             self.__draw_gameover(context)
@@ -478,10 +492,10 @@ class GameArea(Gtk.DrawingArea):
 
         return level
 
-    def generate_score(self):
+    def generate_score(self, reaction_time):
         score = self.score
         if self.win:
-            score = self.score + 20
+            score = self.score + reaction_time + 20
         return score
 
     def bring_to_front(self, cat):
@@ -490,11 +504,12 @@ class GameArea(Gtk.DrawingArea):
 
     def reset(self):
         def cb():
+            self.score = self.generate_score(self.reaction_time)
             self.playing = False
 
+        self.reaction_time = 0
         self.puzzle_count += 1
         self.level = self.get_next_level()
-        self.score = self.generate_score()
         self.load_level_data()
 
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
