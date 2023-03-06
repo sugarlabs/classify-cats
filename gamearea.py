@@ -349,16 +349,21 @@ class GameArea(Gtk.DrawingArea):
         y = 0
 
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
-            right_cats = 0
-            left_cats = 0
+            correctly_placed = True
+            catsCount = [0]*5
 
             for cat in self.cats:
-                if cat.x < alloc.width // 2:
-                    left_cats += 1
-                else:
-                    right_cats += 1
+                catsCount[cat.cat_id-1]+=1
 
-            if left_cats % 2 == self.sides[0]:
+            for cat in self.cats:
+                if cat.x < alloc.width // 2 and catsCount[cat.cat_id-1] % 2 != 0:
+                    correctly_placed = False
+                    break
+                if cat.x > alloc.width // 2 and catsCount[cat.cat_id-1] % 2 == 0:
+                    correctly_placed = False
+                    break
+
+            if correctly_placed:
                 message = _("You correctly placed the cats!")
                 self.win = True
             else:
