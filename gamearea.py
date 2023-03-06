@@ -107,7 +107,6 @@ class GameArea(Gtk.DrawingArea):
         self.levels = {}
         self.level_data = {}
         self.score = 0
-        self.high_score = self.load_highscore()
         self.puzzle_count = None
         self.win = True
         self.max_puzzle_count = 5
@@ -400,7 +399,7 @@ class GameArea(Gtk.DrawingArea):
         self.show_message(context, message, 124, -100)
         your_score = "%s %d" % (_("Your Score:"), score)
         self.show_message(context, your_score, 60, 50)
-        high_score = "%s %d" % (_("High Score:"), self.high_score)
+        high_score = "%s %d" % (_("High Score:"), self.load_highscore())
         self.show_message(context, high_score, 60, 150)
         message = _("Click on the star to start the game.")
         self.show_message(context, message, 30, 250)
@@ -514,7 +513,6 @@ class GameArea(Gtk.DrawingArea):
         self.level = 1
         self.score = 0
         self.cats = []
-        self.high_score = self.load_highscore()
         self.start_timeout(3, self.reset, True)
 
     def stop(self):
