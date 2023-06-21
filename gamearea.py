@@ -356,12 +356,20 @@ class GameArea(Gtk.DrawingArea):
                 catsCount[cat.cat_id-1]+=1
 
             for cat in self.cats:
-                if cat.x < alloc.width // 2 and catsCount[cat.cat_id-1] % 2 != 0:
-                    correctly_placed = False
-                    break
-                if cat.x > alloc.width // 2 and catsCount[cat.cat_id-1] % 2 == 0:
-                    correctly_placed = False
-                    break
+                if self.sides[0] == SideType.ODD:
+                    if cat.x < alloc.width // 2 and catsCount[cat.cat_id-1] % 2 == 0 :
+                        correctly_placed = False
+                        break
+                    if cat.x > alloc.width // 2 and catsCount[cat.cat_id-1] % 2 != 0:
+                        correctly_placed = False
+                        break
+                else:
+                    if cat.x < alloc.width // 2 and catsCount[cat.cat_id-1] % 2 != 0:
+                        correctly_placed = False
+                        break
+                    if cat.x > alloc.width // 2 and catsCount[cat.cat_id-1] % 2 == 0:
+                        correctly_placed = False
+                        break
 
             if correctly_placed:
                 message = _("You correctly placed the cats!")
