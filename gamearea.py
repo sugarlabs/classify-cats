@@ -45,6 +45,7 @@ class SideType:
 class GameType:
     DIVIDED_SCREEN = 0
     ROWS = 1
+    CHOOSE = 2
 
 
 def make_cat_pixbuf(cat_id):
