@@ -112,6 +112,9 @@ class GameArea(Gtk.DrawingArea):
         self.puzzle_count = None
         self.win = True
         self.max_puzzle_count = 5
+        self.choose_option_cats = []
+        self.chosen_cat = None
+        self.odd_cat_id = None
 
         with open("levels.json") as file:
             self.levels = json.load(file)
