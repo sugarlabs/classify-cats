@@ -546,11 +546,15 @@ class GameArea(Gtk.DrawingArea):
             cat_width = 60
             cat_height = 60
 
-        for x in range(0, cats):
-            cat_id = random.choice(cat_ids)
-            cat = Cat(cat_id, cat_width, cat_height)
+        elif self.level_data["type"] == GameType.CHOOSE:
+            choose_cat_ids = self.divide_into_even_odd(cats)
+            cat_width = 60
+            cat_height = 60
 
+        for x in range(0, cats):
             if self.level_data["type"] == GameType.DIVIDED_SCREEN:
+                cat_id = random.choice(cat_ids)
+                cat = Cat(cat_id, cat_width, cat_height)
                 while cat.x < 0 or cat.x + cat.width > alloc.width or (cat.x < alloc.width // 2 and cat.x + cat.width > alloc.width // 2):
                     cat.x = random.randint(0, alloc.width - cat.width)
 
@@ -558,6 +562,8 @@ class GameArea(Gtk.DrawingArea):
                     cat.y = random.randint(0, alloc.height - cat.height - 25)
 
             elif self.level_data["type"] == GameType.ROWS:
+                cat_id = random.choice(cat_ids)
+                cat = Cat(cat_id, cat_width, cat_height)
                 if column == cats_in_row:
                     m = 4 if cats_in_row == 5 else 5
                     cats_in_row = min(m, cats - x)
@@ -568,9 +574,25 @@ class GameArea(Gtk.DrawingArea):
                 cat.y = y
                 column += 1
 
+            elif self.level_data["type"] == GameType.CHOOSE:
+                cat_id = choose_cat_ids[x]
+                cat = Cat(cat_id, cat_width, cat_height)
+                if column == cats_in_row:
+                    m = 4 if cats_in_row == 5 else 5
+                    cats_in_row = min(m, cats - x)
+                    column = 0
+                    y += 1
+ 
+                cat.x = alloc.width // 2 - cats_in_row * (cat.width + space) // 2.0 + (cat.width + space) * column + space // 2
+                cat.y = y
+                column += 1
             self.cats.append(cat)
 
         if self.level_data["type"] == GameType.ROWS:
+            for cat in self.cats:
+                cat.y = alloc.height // 2 - cat.height * (column - cat.y)
+
+        elif self.level_data["type"] == GameType.CHOOSE:
             for cat in self.cats:
                 cat.y = alloc.height // 2 - cat.height * (column - cat.y)
 
