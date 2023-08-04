@@ -511,6 +511,25 @@ class GameArea(Gtk.DrawingArea):
         else:
             return self.show_message(context, message, font_size - 5, y)
 
+    def divide_into_even_odd(self, number):
+        self.odd_cat_id = random.choice(list(range(1, 5)))
+        divided_nums = []
+        flatten_nums = []
+        remaining_sum = number - 1
+
+        for i in range(3):
+            even_number = random.randrange(0, remaining_sum - (3 - i) * 2 + 2, 2)
+            divided_nums.append(even_number)
+            remaining_sum -= even_number
+        divided_nums.append(remaining_sum)
+        divided_nums[self.odd_cat_id - 1] += 1
+
+        for i in range(0, 4):
+            for j in range(0, divided_nums[i]):
+                flatten_nums.append(i + 1)
+        random.shuffle(flatten_nums)
+        return flatten_nums
+
     def add_cats(self):
         alloc = self.get_allocation()
         cat_ids = list(range(1, 5))
