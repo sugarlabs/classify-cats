@@ -260,7 +260,8 @@ class GameArea(Gtk.DrawingArea):
         if self.level_data["type"] == GameType.ROWS:
             self.selected_option = self.over_option
 
-
+        if self.level_data["type"] == GameType.CHOOSE:
+            self.selected_option = self.chosen_cat
 
     def __release_cb(self, widget, event):
         self.clicked = []
