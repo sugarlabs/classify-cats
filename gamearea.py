@@ -148,12 +148,17 @@ class GameArea(Gtk.DrawingArea):
         if self.playing:
             if self.level_data["type"] == GameType.DIVIDED_SCREEN:
                 self.__draw_lines(context)
+                self.__draw_size_label(context)
 
             elif self.level_data["type"] == GameType.ROWS:
                 self.__draw_selected_option(context)
+                self.__draw_size_label(context)
+
+            elif self.level_data["type"] == GameType.CHOOSE:
+                self.__draw_selected_option(context)
+                self.__draw_choose_options(context)
 
             self.__draw_timeout(context)
-            self.__draw_size_label(context)
             self.__draw_cats(context)
 
         elif self.cats != []:
@@ -321,6 +326,11 @@ class GameArea(Gtk.DrawingArea):
         if self.win:
             message = "%s %d" % (_("Your Score: "), self.score)	
             y = self.show_message(context, message, 40, -100)
+
+    def __draw_choose_options(self, context):
+        self.__define_choose_option_cats()
+        for cat in self.choose_option_cats:
+            cat.draw(context)
 
     def __draw_size_label(self, context):
         alloc = self.get_allocation()
