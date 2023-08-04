@@ -268,7 +268,7 @@ class GameArea(Gtk.DrawingArea):
         self.selected_cat = None
         if "type" not in self.level_data.keys():
             return 0
-        if self.level_data["type"] == GameType.ROWS:
+        if self.level_data["type"] == GameType.ROWS or self.level_data["type"] == GameType.CHOOSE:
             if self.selected_option is not None:
                 self.reaction_time = self.count
                 self.count = 0
