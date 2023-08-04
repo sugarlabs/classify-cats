@@ -281,18 +281,29 @@ class GameArea(Gtk.DrawingArea):
 
     def __draw_selected_option(self, context):
         alloc = self.get_allocation()
-        width = alloc.width // 2 - self.line_width // 2
-        height = alloc.height
+        if self.level_data["type"] == GameType.ROWS: 
+            width = alloc.width // 2 - self.line_width // 2
+            height = alloc.height
 
-        context.set_source_rgb(0.9, 0.9, 0.9)
+            context.set_source_rgb(0.9, 0.9, 0.9)
 
-        if self.over_option == self.sides[0]:
-            context.rectangle(0, 0, width, height)
-            context.fill()
+            if self.over_option == self.sides[0]:
+                context.rectangle(0, 0, width, height)
+                context.fill()
 
-        elif self.over_option == self.sides[1]:
-            context.rectangle(alloc.width // 2 + self.line_width // 2, 0, width, height)
-            context.fill()
+            elif self.over_option == self.sides[1]:
+                context.rectangle(alloc.width // 2 + self.line_width // 2, 0, width, height)
+                context.fill()
+
+        elif self.level_data["type"] == GameType.CHOOSE:
+            if self.chosen_cat is not None:
+
+                width = self.chosen_cat.width + 20
+                height = self.chosen_cat.height + 20
+
+                context.set_source_rgb(0.9, 0.9, 0.9)
+                context.rectangle(self.chosen_cat.x - 10, self.chosen_cat.y -10, width, height)
+                context.fill()
 
     def __draw_timeout(self, context):
         alloc = self.get_allocation()
