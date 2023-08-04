@@ -237,6 +237,15 @@ class GameArea(Gtk.DrawingArea):
                 self.over_option = new_option
                 self.redraw()
 
+        elif self.level_data["type"] == GameType.CHOOSE:
+            flag_hover = False
+            for cat in self.choose_option_cats:
+                if event.x > cat.x and event.x < cat.x + cat.width and event.y > cat.y and event.y < cat.y + cat.height:
+                    self.chosen_cat = cat
+                    flag_hover = True
+            if not flag_hover:
+                self.chosen_cat = None
+
     def __press_cb(self, widget, event):
         self.clicked = [event.x, event.y]
         if "type" not in self.level_data.keys():
