@@ -391,6 +391,9 @@ class GameArea(Gtk.DrawingArea):
         elif next_level["type"] == GameType.ROWS:
             message = _("Is the amount of cats on the screen even or odd?")
 
+        elif next_level["type"] == GameType.CHOOSE:
+            message = _("Choose the cat from option given which has a odd count")
+
         self.show_message(context, message, 20, y)
 
     def __draw_end_message(self, context):
@@ -426,8 +429,6 @@ class GameArea(Gtk.DrawingArea):
             else:
                 message = _("You failed to place the cats correctly")
                 self.win = False
-            if self.puzzle_count < self.max_puzzle_count:
-                y = self.show_message(context, message, 64)
 
         elif self.level_data["type"] == GameType.ROWS:
             odd = (len(self.cats) % 2) != 0
@@ -441,8 +442,21 @@ class GameArea(Gtk.DrawingArea):
             else:
                 message = _("You should have selected an option")
                 self.win = False
-            if self.puzzle_count < self.max_puzzle_count:
-                y = self.show_message(context, message, 64)
+
+        elif self.level_data["type"] == GameType.CHOOSE:
+            if self.selected_option is not None:
+                if self.selected_option.cat_id == self.odd_cat_id:
+                    message = _("You Choose correctly!")
+                    self.win = True
+                else:
+                    message = _("You Choose wrong")
+                    self.win = False
+            else:
+                message = _("You should have chosen an option")
+                self.win = False
+
+        if self.puzzle_count < self.max_puzzle_count:
+            y = self.show_message(context, message, 64)
 
         if self.puzzle_count < self.max_puzzle_count:
             self.start_timeout(3, self.reset)
