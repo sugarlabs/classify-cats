@@ -128,6 +128,20 @@ class GameArea(Gtk.DrawingArea):
         self.connect("button-release-event", self.__release_cb)
         self.connect("draw", self.__draw_cb)
 
+    def __define_choose_option_cats(self):
+        alloc = self.get_allocation()
+        x_pad = alloc.width // 10
+        x_step = (alloc.width - 2 * x_pad) // 4
+        x = x_pad
+        y = 30
+
+        for cat_id in range(1, 5):
+            cat = Cat(cat_id, 60, 60)
+            cat.x = x + x_pad
+            cat.y = y
+            x += x_step
+            self.choose_option_cats.append(cat)
+
     def __draw_cb(self, widget, context):
         self.__draw_bg(context)
 
