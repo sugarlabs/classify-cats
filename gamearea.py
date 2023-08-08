@@ -524,8 +524,8 @@ class GameArea(Gtk.DrawingArea):
         divided_nums.append(remaining_sum)
         divided_nums[self.odd_cat_id - 1] += 1
 
-        for i in range(0, 4):
-            for j in range(0, divided_nums[i]):
+        for i in range(4):
+            for j in range(divided_nums[i]):
                 flatten_nums.append(i + 1)
         random.shuffle(flatten_nums)
         return flatten_nums
