@@ -446,10 +446,10 @@ class GameArea(Gtk.DrawingArea):
         elif self.level_data["type"] == GameType.CHOOSE:
             if self.selected_option is not None:
                 if self.selected_option.cat_id == self.odd_cat_id:
-                    message = _("You Choose correctly!")
+                    message = _("You chose correctly!")
                     self.win = True
                 else:
-                    message = _("You Choose wrong")
+                    message = _("You chose wrong")
                     self.win = False
             else:
                 message = _("You should have chosen an option")
