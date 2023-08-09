@@ -551,7 +551,7 @@ class GameArea(Gtk.DrawingArea):
             cat_width = 60
             cat_height = 60
 
-        for x in range(0, cats):
+        for x in range(cats):
             if self.level_data["type"] == GameType.DIVIDED_SCREEN:
                 cat_id = random.choice(cat_ids)
                 cat = Cat(cat_id, cat_width, cat_height)
