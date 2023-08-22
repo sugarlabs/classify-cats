@@ -377,8 +377,8 @@ class GameArea(Gtk.DrawingArea):
 
     def __draw_count(self, context):
         message = "%s %d %s" % (_("The game will start in"), self.count, _("seconds"))
-        y = self.show_message(context, message, 54)
-        self.__draw_help_message(context, y + 20)
+        y = self.show_message(context, message, 40)
+        self.__draw_help_message(context, y + 30)
 
     def __draw_help_message(self, context, y):
         message = ""
@@ -394,11 +394,11 @@ class GameArea(Gtk.DrawingArea):
         elif next_level["type"] == GameType.CHOOSE:
             message = _("Choose the cat from option given which has a odd count")
 
-        self.show_message(context, message, 20, y)
+        self.show_message(context, message, 50, y)
 
     def __draw_end_message(self, context):
         alloc = self.get_allocation()
-        y = 0
+        y = -50
 
         if self.level_data["type"] == GameType.DIVIDED_SCREEN:
             correctly_placed = True
@@ -456,14 +456,14 @@ class GameArea(Gtk.DrawingArea):
                 self.win = False
 
         if self.puzzle_count < self.max_puzzle_count:
-            y = self.show_message(context, message, 64)
+            y = self.show_message(context, message, 40, y)
 
         if self.puzzle_count < self.max_puzzle_count:
             self.start_timeout(3, self.reset)
             message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
-            y = self.show_message(context, message, 24, y)
+            y = self.show_message(context, message, 30, y + 40)
 
-            self.__draw_help_message(context, y + 20)
+            self.__draw_help_message(context, y + 60)
             self.__draw_current_score(context)
             self.__draw_bonus_message(context, self.reaction_time)
 
@@ -645,7 +645,7 @@ class GameArea(Gtk.DrawingArea):
         self.level = 1
         self.score = 0
         self.cats = []
-        self.start_timeout(3, self.reset, True)
+        self.start_timeout(5, self.reset, True)
 
     def stop(self):
         if self.timeout_id is not None:
