@@ -392,7 +392,7 @@ class GameArea(Gtk.DrawingArea):
             message = _("Is the amount of cats on the screen even or odd?")
 
         elif next_level["type"] == GameType.CHOOSE:
-            message = _("Choose the cat from option given which has a odd count")
+            message = _("Choose the cat which has an odd count")
 
         self.show_message(context, message, 50, y)
 
