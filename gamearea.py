@@ -436,14 +436,9 @@ class GameArea(Gtk.DrawingArea):
 
         elif self.level_data["type"] == GameType.ROWS:
             odd = (len(self.cats) % 2) != 0
-            if self.choose_type:
-                if self.selected_option == int(even):
-                    message = _("You selected correctly!")
-                    self.win = True
-            elif not self.choose_type:
-                if self.selected_option == int(odd):
-                    message = _("You selected correctly!")
-                    self.win = True
+            if self.selected_option == int(odd):
+                message = _("You selected correctly!")
+                self.win = True
 
             elif self.selected_option != None:
                 message = _("You selected wrong")
