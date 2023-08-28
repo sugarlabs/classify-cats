@@ -531,16 +531,13 @@ class GameArea(Gtk.DrawingArea):
             divided_nums.append(even_number)
             remaining_sum -= even_number
         divided_nums.append(remaining_sum)
-        print(divided_nums)
+
         if self.choose_type:
             divided_nums[self.choose_cat_id - 1] += 1
-            
         else:
             for i in range(0, 4):
                 if (i + 1) != self.choose_cat_id:
                     divided_nums[i] += 1
-
-        print(divided_nums, self.choose_type)
 
         for i in range(4):
             for j in range(divided_nums[i]):
