@@ -114,7 +114,8 @@ class GameArea(Gtk.DrawingArea):
         self.max_puzzle_count = 5
         self.choose_option_cats = []
         self.chosen_cat = None
-        self.odd_cat_id = None
+        self.choose_cat_id = None
+        self.choose_type = random.choice([0, 1])
 
         with open("levels.json") as file:
             self.levels = json.load(file)
@@ -392,7 +393,10 @@ class GameArea(Gtk.DrawingArea):
             message = _("Is the amount of cats on the screen even or odd?")
 
         elif next_level["type"] == GameType.CHOOSE:
-            message = _("Choose the cat which has an odd count")
+            if self.choose_type:
+                message = _("Choose the cat which has an odd count")
+            else:
+                message = _("Choose the cat which has an even count")
 
         self.show_message(context, message, 50, y)
 
@@ -432,9 +436,14 @@ class GameArea(Gtk.DrawingArea):
 
         elif self.level_data["type"] == GameType.ROWS:
             odd = (len(self.cats) % 2) != 0
-            if self.selected_option == int(odd):
-                message = _("You selected correctly!")
-                self.win = True
+            if self.choose_type:
+                if self.selected_option == int(even):
+                    message = _("You selected correctly!")
+                    self.win = True
+            elif not self.choose_type:
+                if self.selected_option == int(odd):
+                    message = _("You selected correctly!")
+                    self.win = True
 
             elif self.selected_option != None:
                 message = _("You selected wrong")
@@ -445,7 +454,7 @@ class GameArea(Gtk.DrawingArea):
 
         elif self.level_data["type"] == GameType.CHOOSE:
             if self.selected_option is not None:
-                if self.selected_option.cat_id == self.odd_cat_id:
+                if self.selected_option.cat_id == self.choose_cat_id:
                     message = _("You chose correctly!")
                     self.win = True
                 else:
@@ -512,7 +521,7 @@ class GameArea(Gtk.DrawingArea):
             return self.show_message(context, message, font_size - 5, y)
 
     def divide_into_even_odd(self, number):
-        self.odd_cat_id = random.choice(list(range(1, 5)))
+        self.choose_cat_id = random.choice(list(range(1, 5)))
         divided_nums = []
         flatten_nums = []
         remaining_sum = number - 1
@@ -522,7 +531,16 @@ class GameArea(Gtk.DrawingArea):
             divided_nums.append(even_number)
             remaining_sum -= even_number
         divided_nums.append(remaining_sum)
-        divided_nums[self.odd_cat_id - 1] += 1
+        print(divided_nums)
+        if self.choose_type:
+            divided_nums[self.choose_cat_id - 1] += 1
+            
+        else:
+            for i in range(0, 4):
+                if (i + 1) != self.choose_cat_id:
+                    divided_nums[i] += 1
+
+        print(divided_nums, self.choose_type)
 
         for i in range(4):
             for j in range(divided_nums[i]):
