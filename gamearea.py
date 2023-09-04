@@ -519,7 +519,10 @@ class GameArea(Gtk.DrawingArea):
         self.choose_cat_id = random.choice(list(range(1, 5)))
         divided_nums = []
         flatten_nums = []
-        remaining_sum = number - 1
+        if self.choose_type:
+            remaining_sum = number - 1
+        else:
+            remaining_sum = number - 3
 
         for i in range(3):
             even_number = random.randrange(0, remaining_sum - (3 - i) * 2 + 2, 2)
