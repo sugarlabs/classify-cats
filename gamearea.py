@@ -111,7 +111,7 @@ class GameArea(Gtk.DrawingArea):
         self.score = 0
         self.puzzle_count = None
         self.win = True
-        self.max_puzzle_count = 5
+        self.max_puzzle_count = 10
         self.choose_option_cats = []
         self.chosen_cat = None
         self.choose_cat_id = None
@@ -463,7 +463,7 @@ class GameArea(Gtk.DrawingArea):
             y = self.show_message(context, message, 40, y)
 
         if self.puzzle_count < self.max_puzzle_count:
-            self.start_timeout(3, self.reset)
+            self.start_timeout(5, self.reset)
             message = "%s %d %s" % (_("The game will restart in"), self.count, _("seconds"))
             y = self.show_message(context, message, 30, y + 40)
 
