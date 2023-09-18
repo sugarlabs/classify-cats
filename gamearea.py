@@ -111,7 +111,7 @@ class GameArea(Gtk.DrawingArea):
         self.score = 0
         self.puzzle_count = None
         self.win = True
-        self.max_puzzle_count = 5
+        self.max_puzzle_count = 10
         self.choose_option_cats = []
         self.chosen_cat = None
         self.choose_cat_id = None
